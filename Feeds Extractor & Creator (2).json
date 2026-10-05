@@ -1,0 +1,2985 @@
+{
+  "name": "Feeds Extractor & Creator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 2
+            },
+            {}
+          ]
+        }
+      },
+      "id": "9c8099e9-fd44-4e9a-89b8-04772f2819dd",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2128,
+        528
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "01_Input_Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "id": "2dd4df26-cddc-4a74-9bcb-7766dca104a5",
+      "name": "Get row(s) in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1680,
+        528
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "44673a77-7a48-492d-88cf-aa7b40883f81",
+              "leftValue": "={{ DateTime.fromFormat($json.Added_Date, 'M/d/yyyy H:mm:ss').toISO() }}",
+              "rightValue": "={{ $now.minus({ hours: 24 }).toISO() }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "fa491477-d3d5-42db-a499-180f9a29de37",
+      "name": "Filter",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1456,
+        528
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "compare": "selectedFields",
+        "fieldsToCompare": "URL",
+        "options": {}
+      },
+      "id": "c0bb6889-033b-4609-8411-92230426ed6d",
+      "name": "Remove Duplicates",
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        512
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.URL }}",
+        "options": {}
+      },
+      "id": "75540f47-35f0-4a6e-b28e-b8b0c88d3a6f",
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        208,
+        432
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1070129673,
+          "mode": "list",
+          "cachedResultName": "02_Raw_News",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=1070129673"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $('Loop Over Items').item.json.Input_ID }}",
+            "URL": "={{ $('Loop Over Items').item.json.URL }}",
+            "Added_Date": "={{ $('Loop Over Items').item.json.Added_Date }}",
+            "Scraped_At": "={{ $now.toFormat('M/d/yyyy HH:mm:ss') }}",
+            "Extracted_Content": "={{ $json.article_text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Added_Date",
+              "displayName": "Added_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Scraped_At",
+              "displayName": "Scraped_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Extracted_Content",
+              "displayName": "Extracted_Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "49dca22b-65a6-46fb-a614-8d6f6b6d929a",
+      "name": "Append row in sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        448
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/hf-inference/models/microsoft/harrier-oss-v1-0.6b",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inputs",
+              "value": "={{ $json.Extracted_Content }}"
+            },
+            {
+              "name": "normalize",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "truncate",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "truncation_direction",
+              "value": "right"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "469c8d32-5ac6-4cc3-8fab-a9edb24483f0",
+      "name": "Generating Embedding",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        -144
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UVvRoI8rRKugP65E",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "ba2297cb-126e-48d7-b0a0-d600a682fc01",
+      "name": "Merge (Content & Embedding)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "items = _items\n\n\ndef cosine_similarity(a, b):\n    if len(a) != len(b):\n        raise Exception(\"Embedding dimensions do not match\")\n\n    dot = 0\n    norm_a = 0\n    norm_b = 0\n\n    for x, y in zip(a, b):\n        dot += x * y\n        norm_a += x * x\n        norm_b += y * y\n\n    if norm_a == 0 or norm_b == 0:\n        return 0\n\n    return dot / ((norm_a ** 0.5) * (norm_b ** 0.5))\n\n\nresults = []\n\n\nfor i in range(len(items)):\n    for j in range(i + 1, len(items)):\n\n        article_1 = items[i][\"json\"]\n        article_2 = items[j][\"json\"]\n\n        embedding_1 = article_1[\"body\"]\n        embedding_2 = article_2[\"body\"]\n\n        similarity = cosine_similarity(\n            embedding_1,\n            embedding_2\n        )\n\n        results.append({\n            \"json\": {\n\n                # Article 1\n                \"article_1_id\": article_1.get(\"ID\"),\n                \"article_1_url\": article_1.get(\"URL\"),\n                \"article_1_content\": article_1.get(\"Extracted_Content\"),\n\n                # Article 2\n                \"article_2_id\": article_2.get(\"ID\"),\n                \"article_2_url\": article_2.get(\"URL\"),\n                \"article_2_content\": article_2.get(\"Extracted_Content\"),\n\n                # Similarity\n                \"similarity\": round(similarity, 4)\n            }\n        })\n\n\n# Highest similarity first\nresults.sort(\n    key=lambda x: x[\"json\"][\"similarity\"],\n    reverse=True\n)\n\n\nreturn results"
+      },
+      "id": "42e9977d-563b-4ae5-a0a2-e2697d858ce1",
+      "name": "Similarity Search",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "da3b5004-e4eb-40b7-b31f-60a14c1acc5c",
+              "leftValue": "={{ $json.similarity }}",
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "465b79d6-5d54-49dc-8dce-d5a98c0aebfe",
+      "name": "Filtering Similar Articles",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1200,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://router.huggingface.co/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"model\": \"Qwen/Qwen3-4B-Thinking-2507:fastest\",\n  \"temperature\": 0.1,\n  \"max_tokens\": 500,\n  \"response_format\": {\n    \"type\": \"json_object\"\n  },\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": `You are a news deduplication Agent.\n\nCompare two news articles and determine whether they report the SAME underlying news event or DIFFERENT events/developments.\n\nRules:\n\n1. SAME_EVENT means both articles report the same core announcement, transaction, launch, investment, partnership, incident, result, decision, or event.\n\n2. Do NOT classify articles as duplicates just because they discuss the same company, project, person, country, technology, or topic.\n\n3. A materially new development is DIFFERENT_EVENT. Examples:\n- announcement vs construction starting later\n- investment announcement vs project launch\n- partnership announcement vs later implementation\n- contract award vs deployment\n- funding announcement vs later funding round\n- same project but new partner, new amount, new location, or significant milestone\n\n4. If they are the SAME_EVENT, choose which article is MORE INFORMATIVE.\n\nMore informative means it contains more useful factual information such as:\n- financial values\n- dates\n- locations\n- organisations/partners\n- project scope\n- technical details\n- timelines\n- named people\n- attributable quotes\n- specific facts\n\nDo NOT choose an article merely because it is longer.\n\n5. If the articles are DIFFERENT_EVENT, keep both.\n\nReturn only JSON.`\n    },\n    {\n      \"role\": \"user\",\n      \"content\": `ARTICLE 1\n\nID: ${$json.article_1_id}\nURL: ${$json.article_1_url}\n\nCONTENT:\n${$json.article_1_content}\n\n\nARTICLE 2\n\nID: ${$json.article_2_id}\nURL: ${$json.article_2_url}\n\nCONTENT:\n${$json.article_2_content}\n\n\nReturn exactly this structure:\n\n{\n  \"article_1_id\": \"<ID>\",\n  \"article_2_id\": \"<ID>\",\n  \"decision\": \"SAME_EVENT or DIFFERENT_EVENT\",\n  \"preferred_article_id\": \"<ID of better article, or null if different events>\",\n  \"confidence\": 0.0,\n  \"reason\": \"short explanation\"\n}`\n    }\n  ]\n}\n}}",
+        "options": {}
+      },
+      "id": "c2d2cf8d-0f58-47fe-be22-23a8906a8966",
+      "name": "Decision LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1440,
+        -288
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "UVvRoI8rRKugP65E",
+          "name": "Header Auth account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2c9ac9d1-c7f9-4775-9b34-9712579c16e4",
+              "name": "LLM_Result",
+              "value": "={{ ($json.body?.choices?.[0]?.message?.content ?? $json.choices[0].message.content).parseJson() }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "44465095-7883-4709-ae40-bb88687e89b9",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1792,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d1fdb8c-351b-4bf4-b2f9-04cf831a3a20",
+              "leftValue": "={{ $json.LLM_Result.decision }}",
+              "rightValue": "SAME_EVENT",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3c9116a-f153-47bb-a786-419c485bf023",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1968,
+        -64
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b509ef4-c196-470c-bdab-a2b3d9badd10",
+              "name": "Keep_ID",
+              "value": "={{ $json.LLM_Result.preferred_article_id }}",
+              "type": "string"
+            },
+            {
+              "id": "9ea32922-3741-4f01-9f53-a56d6195add4",
+              "name": "Duplicate_ID",
+              "value": "={{ $json.LLM_Result.preferred_article_id == $json.LLM_Result.article_1_id ? $json.LLM_Result.article_2_id : $json.LLM_Result.article_1_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d29a57f0-21aa-4029-99c7-35ee46613a96",
+      "name": "Identify Duplicate",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2176,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "125928ac-a5ca-4af0-971d-0a427b9d722b",
+              "leftValue": "={{\n  !$('Identify Duplicate').isExecuted ||\n  !$('Identify Duplicate')\n    .all()\n    .map(item => String(item.json.Duplicate_ID || ''))\n    .includes(String($json.ID))\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bbe70a6e-b0b7-4e19-b545-100670a80d44",
+      "name": "Filter Duplicates",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        2560,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39ab5eec-ba17-4995-82b0-ec168f4e0c8e",
+              "name": "Duplicate_Count",
+              "value": "={{\n  $('Identify Duplicate').isExecuted\n    ? $('Identify Duplicate')\n        .all()\n        .filter(item =>\n          String(item.json.Keep_ID) === String($json.ID)\n        ).length\n    : 0\n}}",
+              "type": "string"
+            },
+            {
+              "id": "62f8a94f-358f-46fc-8f67-4fe294f3297c",
+              "name": "Duplicate_URLs",
+              "value": "={{\n  $('Identify Duplicate').isExecuted\n    ? $('Identify Duplicate')\n        .all()\n        .filter(item =>\n          String(item.json.Keep_ID) === String($json.ID)\n        )\n        .map(item => String(item.json.Duplicate_ID))\n        .map(duplicateId =>\n          $('Keep Extracted Articles')\n            .all()\n            .find(article =>\n              String(article.json.ID) === duplicateId\n            )\n            ?.json.URL\n        )\n        .filter(Boolean)\n        .join(', ')\n    : ''\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2784,
+        80
+      ],
+      "id": "33ea9d7b-7ff9-4b82-bbba-d8189e2b601a",
+      "name": "Duplicate Details"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 452612346,
+          "mode": "list",
+          "cachedResultName": "03_Deduplicated_News",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=452612346"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "URL": "={{ $json.URL }}",
+            "Added_Date": "={{ $json.Added_Date }}",
+            "Extracted_Content": "={{ $json.Extracted_Content }}",
+            "Duplicate_URLs": "={{ $json.Duplicate_URLs }}",
+            "Duplicate_Count": "={{ $json.Duplicate_Count }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Added_Date",
+              "displayName": "Added_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Extracted_Content",
+              "displayName": "Extracted_Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duplicate_URLs",
+              "displayName": "Duplicate_URLs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Duplicate_Count",
+              "displayName": "Duplicate_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3264,
+        -48
+      ],
+      "id": "40fcd7cb-4e9a-46eb-8a96-a9671ce638b4",
+      "name": "Append row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://8000-01m0g1n0m1v1tjsam61r1vympt.cloudspaces.litng.ai/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "source_url",
+              "value": "={{ $json.URL }}"
+            },
+            {
+              "name": "scraped_content",
+              "value": "={{ $json.Extracted_Content }}"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 40000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3488,
+        -48
+      ],
+      "id": "08c61f36-d608-4313-9ea6-88ddb63a006a",
+      "name": "Feeds LLM",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eef5b6a0-e715-4299-9aea-8674da6064cf",
+              "name": "Title",
+              "value": "={{ $json.result.split('TITLE:')[1].split('\\nSUMMARY:')[0].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "5fbe2ba2-071c-486e-9514-8c6bf60289e5",
+              "name": "Summary",
+              "value": "={{ $json.result.split('SUMMARY:')[1].split('\\nRecord:')[0].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "5a51cdd8-f33a-43b7-bb37-a3b5d91d6d20",
+              "name": "Record",
+              "value": "={{ $json.result.split('Record:')[1].trim() }}",
+              "type": "string"
+            },
+            {
+              "id": "58face59-d4ce-4f80-8caf-cc730997704c",
+              "name": "Full_News",
+              "value": "={{ $json.result }}",
+              "type": "string"
+            },
+            {
+              "id": "3ce6e5b1-4f63-462c-8589-499496a4c055",
+              "name": "Generated_At",
+              "value": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "2975882b-4330-47b0-a5fb-6a6601fba87c",
+              "name": "ID",
+              "value": "={{ $('Append row in sheet1').item.json.ID }}",
+              "type": "string"
+            },
+            {
+              "id": "d0e6a5e1-6db7-4dd3-a51d-6dd3f750d7f0",
+              "name": "URL",
+              "value": "={{ $('Append row in sheet1').item.json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3744,
+        -32
+      ],
+      "id": "2ed0c2c8-76ae-4b23-9822-75a692f3f25c",
+      "name": "Final Output"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 45590687,
+          "mode": "list",
+          "cachedResultName": "04_Final_Output",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=45590687"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "URL": "={{ $json.URL }}",
+            "Generated_At": "={{ $json.Generated_At }}",
+            "Title": "={{ $json.Title }}",
+            "Summary": "={{ $json.Summary }}",
+            "Record": "={{ $json.Record }}",
+            "Full_News": "={{ $json.Full_News }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Generated_At",
+              "displayName": "Generated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Record",
+              "displayName": "Record",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full_News",
+              "displayName": "Full_News",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        4208,
+        -32
+      ],
+      "id": "e2f6e4ef-2bb2-4d91-b62e-da721b9f3697",
+      "name": "Append row in sheet2",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Recover an accessible URL for this news article:\n\n{{ $json.URL }}",
+        "options": {
+          "systemMessage": "You are a Web Recovery Agent in an automated news workflow.\n\nThe primary scraper failed to retrieve a news URL.\n\nYour job is to use the available tools to find an accessible URL for the SAME exact article or news event.\n\nPROCESS:\n1. If it is not accessible, use search to find the same exact article or reliable coverage of the same event.\n2. Prefer the original publisher or another authoritative source.\n3. Do not substitute unrelated news about the same company, topic, person or project.\n4. Do not return or reproduce the full article content.\n5. If no reliable matching URL can be found, return FAILED.\n\nReturn ONLY JSON:\n\n{\n  \"status\": \"SUCCESS\",\n  \"original_url\": \"original failed URL\",\n  \"recovered_url\": \"accessible URL\",\n  \"recovery_method\": \"SEARCH\",\n  \"reason\": \"brief explanation\"\n}\n\nIf recovery fails:\n\n{\n  \"status\": \"FAILED\",\n  \"original_url\": \"original failed URL\",\n  \"recovered_url\": \"\",\n  \"recovery_method\": \"\",\n  \"reason\": \"No reliable accessible version of the article could be found.\"\n}",
+          "maxIterations": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1104,
+        544
+      ],
+      "id": "b5b14512-6945-433f-9199-9f41d6272631",
+      "name": "Fallback Research Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 300,
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        784
+      ],
+      "id": "6718927e-bbd6-41d7-b51a-c7e7a8293ecc",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "GySX7oFP9MC2ZQjE",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Search the web for the exact failed news article or reliable coverage of the same specific event.\n\nUse this tool only if direct extraction of the original URL fails or returns unusable content.\n\nPrefer results matching the original article title, organisations, event, date and source. Do not substitute unrelated stories about the same topic.",
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', `Search query for finding an accessible version or reliable coverage of the exact failed news URL provided in the user message`, 'string') }}",
+        "options": {
+          "topic": "news",
+          "search_depth": "advanced",
+          "max_results": 2
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        784
+      ],
+      "id": "c2d6c4c0-c215-4b96-a2d7-3ff76cb1c805",
+      "name": "Search Content",
+      "credentials": {
+        "tavilyApi": {
+          "id": "zUFjgivfIeivnX2S",
+          "name": "Tavily account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "58e0d0d7-5443-4258-9262-b18fb46840c5",
+              "leftValue": "={{\n(() => {\n\n  const text = ($json.article_text || '').trim();\n  const lower = text.toLowerCase();\n\n  // Empty / too short\n  if (text.length < 200) {\n    return false;\n  }\n\n  // Only inspect the beginning of the page.\n  // This avoids rejecting a real article just because\n  // some footer mentions JavaScript/cookies.\n  const beginning = lower.slice(0, 1200);\n\n  const blockedSignals = [\n    'access denied',\n    'verify you are human',\n    'verify that you are not a robot',\n    'javascript is disabled',\n    'enable javascript and cookies',\n    'checking your browser',\n    'captcha',\n    'request blocked',\n    'forbidden',\n    'just a moment'\n  ];\n\n  const blocked = blockedSignals.some(\n    signal => beginning.includes(signal)\n  );\n\n  return !blocked;\n\n})()\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        656,
+        336
+      ],
+      "id": "d87b1fe2-3996-49e6-8b9d-a4cc033aa940",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "68cb2a25-f488-41c2-9387-97d6bcc9c316",
+              "name": "URL",
+              "value": "={{ $('Filter Previously Processed URLs').item.json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "ead396bc-93bd-457c-8c59-98c184623c2e",
+              "name": "ID",
+              "value": "={{ $('Filter Previously Processed URLs').item.json.Input_ID }}",
+              "type": "string"
+            },
+            {
+              "id": "82f8dba2-28c9-42af-886c-2c01316accf2",
+              "name": "Added_Date",
+              "value": "={{ $('Filter Previously Processed URLs').item.json.Added_Date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        880,
+        448
+      ],
+      "id": "3c980f23-0acf-4986-a0bc-a1a4cdc97dc4",
+      "name": "Prepare Recovery Input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "645173a2-9552-493e-98a4-fabd0ac67b5d",
+              "name": "Recovery_Result",
+              "value": "={{\n  typeof $json.output === 'string'\n    ? $json.output.replace(/```json|```/g, '').trim().parseJson()\n    : $json.output\n}}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1456,
+        544
+      ],
+      "id": "af65603b-a457-4c91-9583-a90981aaa537",
+      "name": "Parse Recovery Result"
+    },
+    {
+      "parameters": {
+        "resource": "extract",
+        "urls": [
+          "={{ $json.Recovery_Result.recovered_url }}"
+        ],
+        "options": {
+          "extract_depth": "advanced",
+          "format": "text"
+        }
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavily",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        448
+      ],
+      "id": "b912efdb-aa54-4c66-9d9d-7cb06fbf02a5",
+      "name": "Extract Recovered Article",
+      "credentials": {
+        "tavilyApi": {
+          "id": "zUFjgivfIeivnX2S",
+          "name": "Tavily account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab1e79c5-6f0b-4c08-85c0-b2eadddb4f53",
+              "name": "article_text",
+              "value": "={{ $json.results[0].raw_content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2352,
+        448
+      ],
+      "id": "e73f5bb6-6710-47fe-bc6f-1c577967581d",
+      "name": "Prepare Recovered Content"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        16,
+        496
+      ],
+      "id": "f927dddc-73c6-4f71-9643-3b9b4ac8e284",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "article_text",
+              "cssSelector": "body",
+              "skipSelectors": "script, style, noscript, svg, nav, header, footer"
+            }
+          ]
+        },
+        "options": {
+          "trimValues": true,
+          "cleanUpText": true
+        }
+      },
+      "id": "fa90b2fc-e623-4166-a560-59b2e5dc27c6",
+      "name": "HTML",
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1e208c09-bd27-4aef-954d-ca12a23e9a1d",
+              "name": "URL",
+              "value": "={{ $('Remove Duplicates').item.json.URL }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        880,
+        640
+      ],
+      "id": "a39d6942-4af1-4c47-aa5c-526a6a0989a0",
+      "name": "Prepare HTTP Error Recovery"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1a3fcd74-8b84-486e-911b-c358213e926a",
+              "leftValue": "={{ \n  $json.Recovery_Result.status === 'SUCCESS' &&\n  ($json.Recovery_Result.recovered_url || '').trim().length > 0\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1904,
+        544
+      ],
+      "id": "96d3d400-1f4d-4d3e-9de9-f1968a5fbfcf",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1070129673,
+          "mode": "list",
+          "cachedResultName": "02_Raw_News",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=1070129673"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.Recovery_Result.original_url }}",
+            "Scraped_At": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+            "Notes": "={{ 'CONTENT NOT ACCESSIBLE - ' + ($json.Recovery_Result.reason || 'Recovery agent could not retrieve the article') }}",
+            "ID": "={{ $('Prepare Recovery Input').item.json.ID }}",
+            "Added_Date": "={{ $('Prepare Recovery Input').item.json.Added_Date }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Added_Date",
+              "displayName": "Added_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Scraped_At",
+              "displayName": "Scraped_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Extracted_Content",
+              "displayName": "Extracted_Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Notes",
+              "displayName": "Notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2128,
+        672
+      ],
+      "id": "28cf2f99-ccf8-4172-b009-c68e17254075",
+      "name": "Log Failed Recovery",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 65
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        544
+      ],
+      "id": "a0cc8dca-2b0d-482d-a862-2d749c4285da",
+      "name": "Wait1",
+      "webhookId": "69e4e65c-c847-47f1-bf6f-e8215b74067f"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c75b8e42-8df9-4c68-a74a-cdda00b41c8e",
+              "leftValue": "={{ ($json.Extracted_Content || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        16
+      ],
+      "id": "e15c8ac9-a812-45cd-af41-57f858e525d0",
+      "name": "Keep Extracted Articles"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "85a0df48-d5bc-4a38-8e71-310f130fc09e",
+              "name": "ID",
+              "value": "={{ $json.ID }}",
+              "type": "string"
+            },
+            {
+              "id": "2a58c7a2-b6de-4ee0-9225-49b1d5dc25cf",
+              "name": "URL",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "c811be24-b5bd-4af7-9dcd-4e4f336767c7",
+              "name": "Failed_At",
+              "value": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "c8912fe5-4cb6-4baf-b48e-d634529023b9",
+              "name": "Error",
+              "value": "={{ $json.error?.message || $json.message || 'Fine-tuned model request failed' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3744,
+        240
+      ],
+      "id": "24e96f90-b5c9-4b9b-9b47-581c42d0da17",
+      "name": "Prepare Model Failure"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fd047d4d-64b0-428b-a370-f92283801fe8",
+              "name": "Failed_At",
+              "value": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "375a5ae3-1862-4e53-a7d1-8f62900d9569",
+              "name": "Stage",
+              "value": "LLM Duplicate Judge",
+              "type": "string"
+            },
+            {
+              "id": "11e1aa32-6a65-47bc-a173-85ca89632cbb",
+              "name": "ID",
+              "value": "={{ ($json.article_1_id || '') + ' vs ' + ($json.article_2_id || '') }}",
+              "type": "string"
+            },
+            {
+              "id": "f5f35aae-c9f0-43f2-b163-5710e16bbf54",
+              "name": "URL",
+              "value": "={{ ($json.article_1_url || '') + ' | ' + ($json.article_2_url || '') }}",
+              "type": "string"
+            },
+            {
+              "id": "279d60f7-7397-4e44-be1f-4a1bfb0e7024",
+              "name": "Status",
+              "value": "Failed",
+              "type": "string"
+            },
+            {
+              "id": "fc399326-f7de-4b0e-954a-8e15cf18ed62",
+              "name": "Error",
+              "value": "={{ $json.error?.message || $json.message || 'Duplicate judge request failed' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1520,
+        208
+      ],
+      "id": "5bc59ca1-445e-4fc1-953a-c7de48b594e6",
+      "name": "Prepare Judge Failure"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc",
+          "mode": "list",
+          "cachedResultName": "News Tracking",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1816998078,
+          "mode": "list",
+          "cachedResultName": "05_Run_Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XN3KHm5jsMMiXqix3dK6DXmNRud1j4vvCFV7bH0DhMc/edit#gid=1816998078"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Failed_At": "={{ $json.Failed_At }}",
+            "Stage": "Fine-tuned Model",
+            "ID": "={{ $json.ID }}",
+            "URL": "={{ $json.URL }}",
+            "Error": "={{ $json.Error }}",
+            "Status": "FAILED"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Failed_At",
+              "displayName": "Failed_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Stage",
+              "displayName": "Stage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3968,
+        240
+      ],
+      "id": "dd76cde9-f93c-4ca0-8710-3cf8bfcbba7e",
+      "name": "Failed Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6b462c00-c4c8-4ace-abbd-85e2565ef68a",
+              "name": "Run_Time",
+              "value": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "8c1d7e32-7ae9-44d2-89d8-2a0db853a3dd",
+              "name": "Input_URLs",
+              "value": "={{ $('Remove Duplicates').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "af7fb622-d431-4205-8686-bea03bdf1746",
+              "name": "Usable_Articles",
+              "value": "={{ $('Keep Extracted Articles').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "9a03eae1-0b74-4bf3-9692-e642a485d104",
+              "name": "Final_Articles",
+              "value": "={{ $('Append row in sheet2').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "3e00501f-7115-4d04-9b2c-8d1c893cc1cb",
+              "name": "Failed_Articles",
+              "value": "={{\n  $('Append row in sheet1').all().length -\n  $('Final Output').all().length\n}}",
+              "type": "string"
+            },
+            {
+              "id": "1311f1e2-142f-4df5-8685-1656a465aa84",
+              "name": "Status",
+              "value": "={{\n  $('Append row in sheet1').all().length >\n  $('Final Output').all().length\n    ? 'COMPLETED WITH WARNINGS'\n    : 'SUCCESS'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        4480,
+        -32
+      ],
+      "id": "bbc87145-1f69-4f0a-973b-5e792444b7d0",
+      "name": "Build Run Summary",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fdd3d70d-0d1c-40fa-a251-42af61b7b26e",
+              "leftValue": "={{\n  $('Prepare Model Failure').all().length ===\n  $('Append row in sheet1').all().length\n}}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        4192,
+        240
+      ],
+      "id": "94eee95e-efdc-4bdb-9f15-0fc3fac5769c",
+      "name": "All Articles Failed"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0e7aef16-814a-4c8e-8c09-3671f390854e",
+              "name": "Run_Time",
+              "value": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+              "type": "string"
+            },
+            {
+              "id": "4ace25b7-f585-4fc2-b378-59a24b0a2ee0",
+              "name": "Input_URLs",
+              "value": "={{ $('Remove Duplicates').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "7e3276e5-52d4-47f8-be12-84e99a7122b2",
+              "name": "Articles_Sent_to_Model",
+              "value": "={{ $('Append row in sheet1').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "09cae58d-fb2c-468a-81f6-91126246f364",
+              "name": "Final_Articles",
+              "value": "={{ 0 }}",
+              "type": "string"
+            },
+            {
+              "id": "579416b3-c395-4f54-a50b-3a19a51463e7",
+              "name": "Failed_Articles",
+              "value": "={{ $('Prepare Model Failure').all().length }}",
+              "type": "string"
+            },
+            {
+              "id": "ec3cf441-1bfc-4a8b-9fe0-a2f1bc3fc163",
+              "name": "Status",
+              "value": "FAILED",
+              "type": "string"
+            },
+            {
+              "id": "83728608-210e-4096-8479-2943bf06f408",
+              "name": "Message",
+              "value": "={{\n  'News workflow failed to generate any final articles. All ' +\n  $('Prepare Model Failure').all().length +\n  ' articles failed at the fine-tuned model stage. Check 05_Run_Log for details.'\n}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        4464,
+        224
+      ],
+      "id": "137c2e30-2f60-4582-8df7-2ece6d1b0c60",
+      "name": "Build All Failed Summary",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "sendTo": "tushar9test@gmail.com",
+        "subject": "={{\n  $json.Status === 'FAILED'\n    ? '🚨 News Workflow Failed'\n    : $json.Status === 'COMPLETED WITH WARNINGS'\n      ? '⚠️ News Workflow Completed With Warnings'\n      : '✅ News Workflow Completed Successfully'\n}}",
+        "message": "={{\n'<h2>News Workflow Run Summary</h2>' +\n\n'<p><b>Status:</b> ' + $json.Status + '<br>' +\n'<b>Run Time:</b> ' + $json.Run_Time + '<br>' +\n'<b>Input URLs:</b> ' + $json.Input_URLs + '<br>' +\n'<b>Articles Sent to Model:</b> ' + ($json.Articles_Sent_to_Model || 0) + '<br>' +\n'<b>Final Articles:</b> ' + ($json.Final_Articles || 0) + '<br>' +\n'<b>Failed Articles:</b> ' + ($json.Failed_Articles || 0) + '</p>' +\n\n($json.Message ? '<p>' + $json.Message + '</p>' : '') +\n\n(\n  $json.Status !== 'FAILED'\n    ? '<p><b>The completed run has been archived.</b></p>' +\n      '<p><a href=\"https://workflowtest101.app.n8n.cloud/form/cee21bc8-b73c-4a3d-b1dd-16a050b12d64\" ' +\n      'style=\"display:inline-block;padding:10px 18px;background:#222;color:white;text-decoration:none;border-radius:5px;\">' +\n      'Approve Working Data Cleanup</a></p>'\n    : '<p><b>Cleanup approval is not available because this run failed.</b></p>'\n)\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        5248,
+        192
+      ],
+      "id": "1ec678cd-bfd6-43ec-bde1-9bb946c41718",
+      "name": "Send Run Alert",
+      "webhookId": "9a6c8707-8b82-4a3f-bcbb-da8c4dbd5ac6",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ilTfNfeuk2S9JJ8n",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong",
+          "mode": "list",
+          "cachedResultName": "News_Processing_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "01_Processed_Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "URL": "={{ $json.URL }}",
+            "Processed_At": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+            "Status": "PROCESSED"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Processed_At",
+              "displayName": "Processed_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        -336
+      ],
+      "id": "9489ea83-f727-4c11-8294-04953ca67c43",
+      "name": "Save Processed Link",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong",
+          "mode": "list",
+          "cachedResultName": "News_Processing_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "01_Processed_Links",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "URL",
+              "lookupValue": "={{ $json.URL }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -816,
+        512
+      ],
+      "id": "8dfd156b-b656-4e84-af4e-f41992adb8d3",
+      "name": "Check Processed Links",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const originalItems = $('Remove Duplicates').all();\nconst processedItems = $input.all();\n\nconst processedMap = new Map();\n\nfor (const item of processedItems) {\n  if (item.json.URL && item.json.Processed_At) {\n    processedMap.set(\n      String(item.json.URL),\n      item.json.Processed_At\n    );\n  }\n}\n\nconst cutoff = DateTime.now().minus({ hours: 48 });\n\nconst output = [];\n\nfor (const item of originalItems) {\n\n  const url = String(item.json.URL || '');\n  const processedAt = processedMap.get(url);\n\n  // Never processed before\n  if (!processedAt) {\n    output.push({\n      json: { ...item.json }\n    });\n    continue;\n  }\n\n  const processedDate = DateTime.fromFormat(\n    processedAt,\n    'M/d/yyyy H:mm:ss'\n  );\n\n  // Invalid date - allow processing\n  if (!processedDate.isValid) {\n    output.push({\n      json: { ...item.json }\n    });\n    continue;\n  }\n\n  // Only process if older than 48 hours\n  if (processedDate < cutoff) {\n    output.push({\n      json: { ...item.json }\n    });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        512
+      ],
+      "id": "d5db581f-95d9-4eb8-bbde-563697961cba",
+      "name": "Filter Previously Processed URLs",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong",
+          "mode": "list",
+          "cachedResultName": "News_Processing_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1525463101,
+          "mode": "list",
+          "cachedResultName": "02_Content_Archive",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit#gid=1525463101"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.ID }}",
+            "URL": "={{ $json.URL }}",
+            "Processed_At": "={{ $now.toFormat('M/d/yyyy H:mm:ss') }}",
+            "Extracted_Content": "={{ $json.Extracted_Content }}",
+            "Duplicate_Count": "={{ $json.Duplicate_Count }}",
+            "Duplicate_URLs": "={{ $json.Duplicate_URLs }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Processed_At",
+              "displayName": "Processed_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Added_Date",
+              "displayName": "Added_Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Extracted_Content",
+              "displayName": "Extracted_Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Duplicate_Count",
+              "displayName": "Duplicate_Count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Duplicate_URLs",
+              "displayName": "Duplicate_URLs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3040,
+        -48
+      ],
+      "id": "f94fd33f-2b1d-4fd6-a3fd-e4ffeb0addf8",
+      "name": "Archive Deduplicated Content",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong",
+          "mode": "list",
+          "cachedResultName": "News_Processing_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 577977845,
+          "mode": "list",
+          "cachedResultName": "03_Final_Output_Archive",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit#gid=577977845"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.URL }}",
+            "ID": "={{ $json.ID }}",
+            "Generated_At": "={{ $json.Generated_At }}",
+            "Title": "={{ $json.Title }}",
+            "Summary": "={{ $json.Summary }}",
+            "Record": "={{ $json.Record }}",
+            "Full_News": "={{ $json.Full_News }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Generated_At",
+              "displayName": "Generated_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Summary",
+              "displayName": "Summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Record",
+              "displayName": "Record",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Full_News",
+              "displayName": "Full_News",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3984,
+        -32
+      ],
+      "id": "e2260db7-090e-4b11-aa5e-d91852fcee39",
+      "name": "Archive Final Output",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong",
+          "mode": "list",
+          "cachedResultName": "News_Processing_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1297989557,
+          "mode": "list",
+          "cachedResultName": "04_Run_History",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Awh4s310KzElEXuNN6_OJTlx4YXOtDnFoD9OzSGEong/edit#gid=1297989557"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Run_Time": "={{ $json.Run_Time }}",
+            "Input_URLs": "={{ $json.Input_URLs }}",
+            "Articles_Sent_to_Model": "={{ $json.Usable_Articles }}",
+            "Final_Articles": "={{ $json.Final_Articles }}",
+            "Failed_Articles": "={{ $json.Failed_Articles }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Run_Time",
+              "displayName": "Run_Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Input_URLs",
+              "displayName": "Input_URLs",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Articles_Sent_to_Model",
+              "displayName": "Articles_Sent_to_Model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Final_Articles",
+              "displayName": "Final_Articles",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Failed_Articles",
+              "displayName": "Failed_Articles",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        5248,
+        16
+      ],
+      "id": "dac05b14-e29f-4fdb-a1ff-9ea44b5cde63",
+      "name": "Save Run History",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "cG2t6TyzeGNBdmDO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a1477eda-cc34-47d9-b6ba-61fefac13ced",
+              "leftValue": "={{ !!$json.URL }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        512
+      ],
+      "id": "22e493ec-1b34-497a-be85-ebb619c9bc83",
+      "name": "Any URLs Processed"
+    },
+    {
+      "parameters": {
+        "sendTo": "tushar9test@gmail.com",
+        "subject": "News Workflow - No URLs to Process",
+        "emailType": "text",
+        "message": "={{\n$('Any URLs Processed').isExecuted\n  ?\n  'News workflow completed without processing any articles.\\n\\n' +\n  'Reason: All eligible URLs were already processed within the last 48 hours.\\n\\n' +\n  'No scraping, embedding, deduplication, or LLM processing was required.\\n\\n' +\n  'Run Time: ' + $now.toFormat('M/d/yyyy H:mm:ss')\n\n  :\n\n  'News workflow completed without processing any articles.\\n\\n' +\n  'Reason: No URLs were available within the required 24-hour input window.\\n\\n' +\n  'No further processing was required.\\n\\n' +\n  'Run Time: ' + $now.toFormat('M/d/yyyy H:mm:ss')\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        832
+      ],
+      "id": "ffe12011-6be3-4875-911a-8fe9a8de7872",
+      "name": "Send a message",
+      "webhookId": "1d186956-4b9c-41ca-b298-7e378a8fc946",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ilTfNfeuk2S9JJ8n",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3248fe0b-1a03-4419-8f02-362033ed90c7",
+              "leftValue": "={{ !!$json.URL }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1248,
+        528
+      ],
+      "id": "fd44df28-1b68-4c59-b355-878e64de46fc",
+      "name": "Any Recent URLs",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "formTitle": "Run News Workflow",
+        "formDescription": "Manually start the news-processing workflow without waiting for the scheduled run.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Action",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "RUN WORKFLOW NOW"
+                  },
+                  {
+                    "option": "CANCEL"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "Submit"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -2144,
+        784
+      ],
+      "id": "af4daa8f-a51b-4d98-888e-1cba33b04ae7",
+      "name": "On form submission",
+      "webhookId": "eb3c1847-d471-478d-b9bf-590e43d8fd55"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "00b816d9-97b3-49fa-8fee-2fc80710acb5",
+              "leftValue": "={{ $json.Action }}",
+              "rightValue": "RUN WORKFLOW NOW",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1920,
+        784
+      ],
+      "id": "03f106e4-d365-4a7f-bedf-f4fd1d0eee25",
+      "name": "Run Confirmed"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Any Recent URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Check Processed Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare HTTP Error Recovery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generating Embedding": {
+      "main": [
+        [
+          {
+            "node": "Merge (Content & Embedding)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge (Content & Embedding)": {
+      "main": [
+        [
+          {
+            "node": "Similarity Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Similarity Search": {
+      "main": [
+        [
+          {
+            "node": "Filtering Similar Articles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtering Similar Articles": {
+      "main": [
+        [
+          {
+            "node": "Decision LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision LLM": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Judge Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Identify Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identify Duplicate": {
+      "main": [
+        []
+      ]
+    },
+    "Filter Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Duplicate Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Duplicate Details": {
+      "main": [
+        [
+          {
+            "node": "Archive Deduplicated Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Feeds LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feeds LLM": {
+      "main": [
+        [
+          {
+            "node": "Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Model Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Output": {
+      "main": [
+        [
+          {
+            "node": "Archive Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Fallback Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Content": {
+      "ai_tool": [
+        [
+          {
+            "node": "Fallback Research Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Recovery Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Recovery Input": {
+      "main": [
+        [
+          {
+            "node": "Fallback Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Recovery Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Recovery Result": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Recovered Article": {
+      "main": [
+        [
+          {
+            "node": "Prepare Recovered Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Recovered Content": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Keep Extracted Articles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare HTTP Error Recovery": {
+      "main": [
+        [
+          {
+            "node": "Fallback Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Extract Recovered Article",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Failed Recovery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Failed Recovery": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Extracted Articles": {
+      "main": [
+        [
+          {
+            "node": "Generating Embedding",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge (Content & Embedding)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Processed Link",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Model Failure": {
+      "main": [
+        [
+          {
+            "node": "Failed Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Build Run Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Prepare Judge Failure": {
+      "main": [
+        [
+          {
+            "node": "Failed Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failed Log": {
+      "main": [
+        [
+          {
+            "node": "All Articles Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Articles Failed": {
+      "main": [
+        [
+          {
+            "node": "Build All Failed Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build All Failed Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Run Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Run History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Run Summary": {
+      "main": [
+        [
+          {
+            "node": "Send Run Alert",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save Run History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Processed Link": {
+      "main": [
+        []
+      ]
+    },
+    "Check Processed Links": {
+      "main": [
+        [
+          {
+            "node": "Filter Previously Processed URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Previously Processed URLs": {
+      "main": [
+        [
+          {
+            "node": "Any URLs Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive Deduplicated Content": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archive Final Output": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any URLs Processed": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Recent URLs": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Run Confirmed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Confirmed": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "R9yN1D8JOljKWJT3",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "faaeafd6-c316-46bf-80ca-f07b43b73983",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "aded9e22ee51052f0fa361487e8f09cc14ceb15a4765ce507e187c6a6304e9c8"
+  },
+  "nodeGroups": [],
+  "id": "R2Nj0qMpBiC6Dgl0",
+  "tags": []
+}
